@@ -31,11 +31,12 @@ int scrabble[26];
 int resultat[5];
 int boucleJeu=1;
 
+void demandeLettre();
 int initTab();
 void initScrabble();
 int dessinPendu();
 int verrifFinJeu();
-int jeu();
+void jeu();
 void viderBuffer();
 char *initWords();
 void initClassement();
@@ -43,6 +44,7 @@ int score();
 void triClassement();
 void afficherClassement();
 int demandeRejouer();
+int verrifLettre();
 
 struct partie
 {
@@ -102,53 +104,58 @@ int initTab() //initialise les 4 tableau
 	}
 }
 
-int jeu()
+void jeu()
 {
 	int i;
 	tentative=0;
 	deja_utilise=0;
 	lettre=0;
+	demandeLettre(); //demande une lettre et verifie que s'en soit bien une
+	deja_utilise=verrifLettre();//verifie que la lettre n'ait pas deja ete demandee
+	if (deja_utilise==0) // si la lettre n'a pas deja ete demandee
+	{
+		lettres_tentes[avancement_lettres_tentes]=lettre; //ajoute la lettre au tableau des lettres deja demandes
+		avancement_lettres_tentes++;
+		for (i=0;i<taille_mot;i++)
+		{
+			if (lettre==a_deviner[i])
+			{
+				avancement[i]=lettre;
+				tentative=1;
+			}
+			printf("%c",avancement[i]);
+		}
+		printf("\n\n");
+		if (tentative==0)// la lettre n'est pas dedans
+		{
+			compteur_tentative=compteur_tentative+1;
+			dessinPendu();
+		}
+	}
+}
+
+void demandeLettre()
+{
 	while (lettre<97 || lettre>122) // si le caractere est une lettre minuscule
 	{
 		viderBuffer();
 		printf("Entrez une lettre minuscule : ");
 		lettre=getchar();
 	}
+}
+
+int verrifLettre()
+{
+	int i;
 	for (i=0;i<26;i++) // verrif de si la lettre a deja été demandé
 	{
-		printf("%c ",lettres_tentes[i]);
 		if (lettre==lettres_tentes[i])
 		{
-			deja_utilise=1;
 			printf("Vous avez deja demandé cette lettre\a\n");
+			return(1);
 		}
 	}
-	printf("\n %d \n",avancement_lettres_tentes);
-	if (deja_utilise==0) // si la lettre n'a pas deja été demandée
-	{
-		lettres_tentes[avancement_lettres_tentes]=lettre; //ajoute la lettre au tableau des lettres deja demandés
-		avancement_lettres_tentes++;
-		for (i=0;i<taille_mot;i++)
-			if (lettre==a_deviner[i])
-			{
-				avancement[i]=lettre;
-				tentative=1;
-			}
-		if (tentative==0)// la lettre n'est pas dedans
-		{
-			compteur_tentative=compteur_tentative+1;
-			for (i=0;i<taille_mot;i++)
-				printf("%c",avancement[i]);
-			printf("\n\n");
-			dessinPendu();
-		}
-		if (tentative==1)// la lettre est dedans (une ou plusieurs fois)
-		{
-			for (i=0;i<taille_mot;i++)
-				printf("%c",avancement[i]);
-			printf("\n\n");
-		}
-	}
+	return(0);
 }
 
 int verrifFinJeu()
